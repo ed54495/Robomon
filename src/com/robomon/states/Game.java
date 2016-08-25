@@ -17,6 +17,7 @@ public class Game extends StateBasedGame {
 	public static Fighter fighter;
 	public static Battle battle = new Battle();
 	
+	public static final int INTRO_SCREEN = 0;
 	public static final int CHARACTER_CREATION = 1;
 	public static final int BATTLE = 2;
 	public static final int VICTORY = 3;
@@ -43,6 +44,7 @@ public class Game extends StateBasedGame {
 
 	@Override
 	public void initStatesList(GameContainer container) throws SlickException {
+		this.addState(new IntroScreen());
 		this.addState(new CharacterCreationState());
 		this.addState(new Overworld());
 		this.addState(battle);

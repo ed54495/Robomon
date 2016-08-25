@@ -30,40 +30,67 @@ public class Battle extends BasicGameState {
 	private int opponentStartX = opponentLocation[0];
 	private int characterStartX = characterLocation[0];
 	private SpriteSheet characterSelectSheet;
-	private int delay;
+	private int animationDelay;
+	private Attack opponentAttack = Attack.EMPTY;
+	private Attack characterAttack = Attack.EMPTY;
+	private int opponentAttackDamage = 0;
+	private int characterAttackDamage = 0;
+	private int levelsGained = 0;
 	
 	// health bars
 	private RoundedRectangle characterHealth;
 	private RoundedRectangle characterHealthOutline;
 	private RoundedRectangle opponentHealth;
 	private RoundedRectangle opponentHealthOutline;
+	private RoundedRectangle characterXp;
+	private int characterStartXp;
+	private RoundedRectangle characterXpOutline;
 	
 	// HUD objects
-	private RoundedRectangle characterHUD;
-	private RoundedRectangle opponentHUD;
+	private RoundedRectangle leftHUD;
+	private RoundedRectangle rightHUD;
 	private Rectangle buttonOne;
+	private Rectangle buttonTwo;
+	private Rectangle buttonThree;
+	private Rectangle buttonFour;
+	private Boolean showMenu = false;
 	private Boolean fightSelected = false;
+	private String[] mainMenu = {"FIGHT", "INVENTORY", "RUN", null};
+	private String message = "";
 	
 	// Boolean values to trigger hit animations
 	private Boolean opponentHit = false;
 	private Boolean characterHit = false;
-	private Boolean frozen = false;
+	private Boolean textFreeze = true;
+	private Boolean awaitingClick = false;
+	private Boolean awaitingSecodaryClick = false;
+	private Boolean attackInProgress = false;
+	private Boolean xpAnimation = false;
 
 	private ParticleSystem system;
 	private ConfigurableEmitter characterEmitter;
 	private ConfigurableEmitter opponentEmitter;
 	
+	private Boolean victory = false;
+	private Boolean failure = false;
+	private int messageIndex = 0;
+	
 	@Override
 	public void init(GameContainer arg0, StateBasedGame arg1) throws SlickException {
-		characterHUD = new RoundedRectangle(20, 280, 320, 100, 10);
-		opponentHUD = new RoundedRectangle(360, 280, 320, 100, 10);
-		buttonOne = new Rectangle(30, 290, 120, 40);
+		leftHUD = new RoundedRectangle(20, 280, 320, 100, 10);
+		rightHUD = new RoundedRectangle(360, 280, 320, 100, 10);
+		buttonOne = new Rectangle(360, 280, 160, 50);
+		buttonTwo = new Rectangle(360, 330, 160, 50);
+		buttonThree = new Rectangle(520, 280, 160, 50);
+		buttonFour = new Rectangle(520, 330, 160, 50);
 		
 		characterSelectSheet = new SpriteSheet("resources/images/characters.png", 16, 16, 1);
 		characterHealth = new RoundedRectangle(30, 260, 160, 10, 5);
 		opponentHealth = new RoundedRectangle(370, 260, 160, 10, 5);
 		characterHealthOutline = new RoundedRectangle(30, 260, 160, 10, 5);
 		opponentHealthOutline = new RoundedRectangle(370, 260, 160, 10, 5);
+		characterXp = new RoundedRectangle(30, 240, 160, 10, 5);
+		characterXpOutline = new RoundedRectangle(30, 240, 160, 10, 5);
 		
 		try {
 			//load the test particle and 
@@ -86,8 +113,11 @@ public class Battle extends BasicGameState {
 
 	@Override
 	public void render(GameContainer container, StateBasedGame sbg, Graphics g) throws SlickException {
-		g.draw(characterHUD);
-		g.draw(opponentHUD);
+		g.setColor(Color.white);
+		g.draw(leftHUD);
+		g.draw(rightHUD);
+		
+		g.drawString(message, 40, 300);
 		
 		character.drawFighter(g, characterSelectSheet, characterLocation[0], characterLocation[1], 10);
 		opponent.drawFighter(g, characterSelectSheet, opponentLocation[0], opponentLocation[1], 10);
@@ -96,20 +126,27 @@ public class Battle extends BasicGameState {
 		g.setColor(Color.red);
 		g.fill(characterHealth);
 		g.fill(opponentHealth);
+		g.setColor(Color.blue);
+		g.fill(characterXp);
 		g.setColor(Color.white);
 		g.draw(characterHealthOutline);
 		g.draw(opponentHealthOutline);
+		g.draw(characterXpOutline);
 		
 		g.drawString(character.getHp() + "/" + character.getMaxhp(), 200, 255);
-		g.drawString(opponent.getHp() + "/" + opponent.getMaxhp(), 540, 255);
+		g.drawString("Lvl " + opponent.getLevel(), 540, 255);
+		g.drawString("Lvl " + character.getLevel(), 200, 235);
 		
 		// Choose which menu to display
 		if(fightSelected) {
-			g.drawString("Punch", 40,  300);
-			g.drawString("Cower in fear", 40,  335);
-		} else {
-			g.drawString("Fight", 40,  300);
-			g.drawString("Inventory", 40,  335);
+			g.drawString(character.attacks[0].toString(), 380,  300);
+			g.drawString(character.attacks[1].toString(), 380,  335);
+			g.drawString(character.attacks[2].toString(), 530,  300);
+			g.drawString(character.attacks[3].toString(), 530,  335);
+		} else if(showMenu){
+			g.drawString(mainMenu[0], 380,  300);
+			g.drawString(mainMenu[1], 380,  335);
+			g.drawString(mainMenu[2], 530, 300);
 		}
 		
 		// renders particle effects
@@ -121,61 +158,67 @@ public class Battle extends BasicGameState {
 		// Let particleSystem object know framerate
 		system.update(delta);
 		
-		// Check if opponents hit animation is happening
-		if(opponentHit){
-			opponent.setMouthOpen(1);
-			if(delay > 0){
-				delay -= delta;
-				shakeOpponent(delay, opponentStartX);
-			} else {
-				delay = 1500;
-				opponentLocation[0] = opponentStartX;
-				opponent.setMouthOpen(0);
-				opponentHealth.setWidth(((float)opponent.getHp()/opponent.getMaxhp()) * opponentHealthOutline.getWidth());
-				opponentHit = false;
-				if(opponent.getHp() <= 0){
-					sbg.enterState(Game.VICTORY, new FadeOutTransition(), new FadeInTransition());
-				}
+		if(victory && !awaitingClick && !xpAnimation){
+			switch (messageIndex) {
+			case 0:
+				message = "You have defeated " + opponent.name + "!";
+				break;
+
+			case 1:
+				message = character.name + " gained " + calcXp() + " experience!";
+				xpAnimation = true;
+				animationDelay = 1000;
+				levelsGained = character.addXp(calcXp());
+				break;
+				
+			case 2:
+				sbg.enterState(Game.VICTORY, new FadeOutTransition(), new FadeInTransition());
+				break;
+			default:
+				break;
 			}
-		} 
-		// Check if users characters hit animation is happening
-		else if(characterHit){
-			if(delay > 1000){
-				delay -= delta;
-			} else if(delay > 0){
-				character.setMouthOpen(1);
-				delay -= delta;
-				shakeCharacter(delay, characterStartX);
-			} else {
-				delay = 0;
-				characterLocation[0] = characterStartX;
-				character.setMouthOpen(0);
-				characterHealth.setWidth((float)character.getHp()/character.getMaxhp() * characterHealthOutline.getWidth());
-				characterHit = false;
-				if(character.getHp() <= 0){
-					sbg.enterState(Game.OVER, new FadeOutTransition(), new FadeInTransition());
-				}
-			}
+			awaitingClick = true;
+			messageIndex++;
 		}
+		
+		checkXpAnimation(delta);
+		
+		checkHitFlags(delta, sbg);
 	}
 
 	public void mouseClicked(int button, int x, int y, int clickCount){
+		awaitingClick = false;
 		// Freeze inputs if animation is happening
-		if(!frozen && !characterHit && !opponentHit){
+		if(!textFreeze && !characterHit && !opponentHit && !awaitingClick){
 			// Check if button one (fight button) is clicked
 			if(!fightSelected && buttonOne.contains(x, y)){
 				fightSelected = true;
 			} 
-			// Checks if attack in first position is clicked
-			else if (fightSelected && buttonOne.contains(x,y)){
-				character.attackFighter(Attack.PUNCH, opponent);
-				opponentHit = true;
-				delay = 1000;
-				fightSelected = false;
+			// Checks if menu is attack menu
+			else if (fightSelected){
+				if(buttonOne.contains(x, y)){
+					characterAttack = character.attacks[0];
+				} else if (buttonTwo.contains(x, y)){
+					characterAttack = character.attacks[1];
+				} else if (buttonThree.contains(x, y)){
+					characterAttack = character.attacks[2];
+				} else if (buttonFour.contains(x, y)){
+					characterAttack = character.attacks[3];
+				}
+				if(characterAttack.offensive != -1){
+					message = character.name + " used " + characterAttack.toString() + "!";
+					characterAttackDamage = character.attackFighter(characterAttack, opponent);
+					opponentHit = true;
+					attackInProgress = true;
+					animationDelay = 1000;
+					fightSelected = false;
+				}
 				
-				opponent.autoAttackFighter(character);
-				characterHit = true;
 			}
+		} else if(textFreeze){
+			message = "What will you do?";
+			textFreeze = false;
+			showMenu = true;
 		}
 	}
 	
@@ -201,6 +244,77 @@ public class Battle extends BasicGameState {
 		characterEmitter.setPosition(characterLocation[0] + 15, characterLocation[1] + 25, false);
 	}
 	
+	private void checkHitFlags(int delta, StateBasedGame sbg){
+		if(attackInProgress && !victory && !failure){
+			// Check if opponents hit animation is happening
+			if(opponentHit){
+				opponent.setMouthOpen(1);
+				if(animationDelay > 0){
+					animationDelay -= delta;
+					shakeOpponent(animationDelay, opponentStartX);
+				} else {
+					message = character.name + " dealt " + characterAttackDamage + " to " + opponent.name + "...";
+					opponentLocation[0] = opponentStartX;
+					opponent.setMouthOpen(0);
+					opponentHealth.setWidth(((float)opponent.getHp()/opponent.getMaxhp()) * opponentHealthOutline.getWidth());
+					opponentHit = false;
+					if(opponent.getHp() <= 0){
+						victory = true;
+						awaitingSecodaryClick = true;
+					} else {
+						animationDelay = 1200;
+						opponentAttack = opponent.autoAttackFighter(character);
+						opponentAttackDamage = opponent.attackFighter(opponentAttack, character);
+						characterHit = true;
+					}
+					awaitingClick = true;
+				}
+			} 
+			// Check if users characters hit animation is happening
+			else if(characterHit && !awaitingClick){
+				message = opponent.name + " used " + opponentAttack.toString() + "!";
+				if (animationDelay > 1000) {
+					animationDelay -= delta;
+				} else if(animationDelay > 0){
+					character.setMouthOpen(1);
+					animationDelay -= delta;
+					shakeCharacter(animationDelay, characterStartX);
+				} else {
+					animationDelay = 0;
+					characterLocation[0] = characterStartX;
+					character.setMouthOpen(0);
+					characterHealth.setWidth((float)character.getHp()/character.getMaxhp() * characterHealthOutline.getWidth());
+					characterHit = false;
+					if(character.getHp() <= 0){
+						sbg.enterState(Game.OVER, new FadeOutTransition(), new FadeInTransition());
+					}
+					awaitingClick = true;
+				}
+			} else if(!awaitingClick) {
+				message = opponent.name + " dealt " + opponentAttackDamage + " to " + character.name;
+				textFreeze = true;
+				attackInProgress = false;
+			}
+		}
+	}
+	
+	private void checkXpAnimation(int delta) {
+		if(xpAnimation){
+			if(animationDelay > 0){
+				animationDelay -= delta;
+				float xp = ((1000 - animationDelay)/1000f) * calcXp();
+				characterXp.setWidth(((float)(xp + characterStartXp)/character.getMaxXp()) * characterXpOutline.getWidth());
+			} else {
+				animationDelay = 0;
+				xpAnimation = false;
+			}
+		}
+	}
+	
+	private int calcXp(){
+		return (int) Math.round(5 + Math.pow(opponent.getLevel(), 1.2) * 2);
+	}
+	
 	@Override
 	public int getID() {
 		return Game.BATTLE;
@@ -212,6 +326,7 @@ public class Battle extends BasicGameState {
 
 	public void setOpponent(Fighter opponent) {
 		this.opponent = opponent;
+		this.message = opponent.name + " wants to fight!";
 	}
 
 	public Fighter getCharacter() {
@@ -220,6 +335,11 @@ public class Battle extends BasicGameState {
 
 	public void setCharacter(Fighter character) {
 		this.character = character;
+		characterStartXp = character.getXp();
+		if(characterStartXp == 0){
+			characterStartXp = 1;
+		}
+		characterXp.setWidth(((float)characterStartXp/character.getMaxXp()) * characterXpOutline.getWidth());
 	}
 
 }

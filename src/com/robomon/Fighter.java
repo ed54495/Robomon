@@ -9,6 +9,8 @@ import com.robomon.common.Attack;
 
 public class Fighter {
 
+	public String name = "bill";
+	
 	// sprite choices
 	private int skinChoice = 0;
 	private int pantsChoice = 0;
@@ -22,19 +24,22 @@ public class Fighter {
 	private int mouthOpen = 0;
 	
 	// List of attacks
-	public Attack[] attacks = {Attack.PUNCH, Attack.COWER, null, null};
+	public Attack[] attacks = {Attack.PUNCH, Attack.COWER, Attack.EMPTY, Attack.EMPTY};
 	
 	// Fighter stats
 	private int level = 1;
 	private int hp = 10;
 	private int maxhp = 10;
+	private int xp = 0;
+	private int maxXp = 50;
 	private int strength = 1;
 	
 	private Random random = new Random();
 	
 
 	
-	public Fighter(int skin, int pants, int shoes, int[] shirt, int[] shirtColor, int[] hair, int[] hairColor) {
+	public Fighter(String name, int skin, int pants, int shoes, int[] shirt, int[] shirtColor, int[] hair, int[] hairColor) {
+		this.name = name;
 		skinChoice = skin;
 		pantsChoice = pants;
 		shoeChoice = shoes;
@@ -57,7 +62,7 @@ public class Fighter {
 	}
 
 	// Calculates damage based on attack
-	public void attackFighter(Attack a, Fighter opponent){
+	public int attackFighter(Attack a, Fighter opponent){
 		if(a.offensive == 1){
 			int damage = Math.round((50 + random.nextInt(50)) * (a.power * this.strength) / 100f);
 			if(opponent.getHp() > damage){
@@ -65,15 +70,18 @@ public class Fighter {
 			} else {
 				opponent.setHp(0);
 			}
+			return damage;
+		} else {
+			return 0;
 		}
 	}
 	
 	// Auto attack method for computer fighters
-	public void autoAttackFighter(Fighter opponent){
+	public Attack autoAttackFighter(Fighter opponent){
 		if(random.nextInt(10) > 7){
-			attackFighter(Attack.COWER, opponent);
+			return Attack.COWER;
 		} else {
-			attackFighter(Attack.PUNCH, opponent);
+			return Attack.PUNCH;
 		}
 	}
 	
@@ -83,6 +91,29 @@ public class Fighter {
 		this.maxhp = (int) Math.round(9 + Math.pow(level, 1.1) * 3);
 		this.hp = maxhp;
 		this.strength = 1 + level * 2;
+		this.maxXp = (int) Math.round(10 + Math.pow(level, 1.3) * 2);
+	}
+	
+	public int addXp(int addXp){
+		int levels = 0;
+		int newXp = this.xp + addXp;
+		if(newXp >= this.maxXp){
+			newXp = newXp - this.maxXp;
+			this.setLevel(this.level + 1);
+			levels++;
+			levels += this.addXp(newXp);
+		} else {
+			this.xp = newXp;
+		}
+		return levels;
+	}
+	
+	public int getXp(){
+		return this.xp;
+	}
+	
+	public int getMaxXp() {
+		return this.maxXp;
 	}
 
 	public int[] getSheild() {

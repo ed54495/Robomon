@@ -1,7 +1,7 @@
 package com.robomon.common;
 
 public enum Attack {
-	PUNCH(1,1), COWER(0);
+	EMPTY(-1), PUNCH(1,1), COWER(0);
 	// Set to 1 if offensive or 0 if defensive
 	public int offensive;
 	public int power;
@@ -13,5 +13,13 @@ public enum Attack {
 	private Attack(int offensive, int power){
 		this.offensive = offensive;
 		this.power = power;
+	}
+	
+	public  String toString() {
+		if (this.offensive == -1){
+			return "";
+		} else {
+			return this.name();
+		}
 	}
 }

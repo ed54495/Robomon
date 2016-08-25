@@ -19,6 +19,7 @@ import com.robomon.Fighter;
 import java.io.File;
 import java.util.ArrayList;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 
 public class CharacterCreationState extends BasicGameState {
@@ -35,6 +36,7 @@ public class CharacterCreationState extends BasicGameState {
 	private int[] shirtColorChoice = {0, 0};
 	private int[] hairChoice = {0, 0};
 	private int[] hairColorChoice = {0, 0};
+	private String characterName = "Bob";
 	
 	private int[] characterLocation = {100, 40};
 	private int characterScale = 10;
@@ -86,6 +88,7 @@ public class CharacterCreationState extends BasicGameState {
 
 	@Override
 	public void render(GameContainer container, StateBasedGame sbg, Graphics g) throws SlickException {
+		g.setColor(Color.white);
 		characterSelectSheet.getSubImage(0, characterChoice).draw(characterLocation[0], characterLocation[1], characterScale);
 		characterSelectSheet.getSubImage(3, pantsChoice).draw(characterLocation[0], characterLocation[1], characterScale);
 		characterSelectSheet.getSubImage(4, shoeChoice).draw(characterLocation[0], characterLocation[1], characterScale);
@@ -157,10 +160,11 @@ public class CharacterCreationState extends BasicGameState {
 			
 			// If ready button pressed set up battle with new opponent
 			if(start.contains(x, y)){
-				Game.fighter = new Fighter(characterChoice, pantsChoice, shoeChoice, shirtChoice, shirtColorChoice, hairChoice, hairColorChoice);
-				Game.fighter.setLevel(5);
+				Fighter character = new Fighter(characterName, characterChoice, pantsChoice, shoeChoice, shirtChoice, shirtColorChoice, hairChoice, hairColorChoice);
+				character.setLevel(5);
+				Game.fighter = character;
 				Game.battle.setCharacter(Game.fighter);
-				Fighter opponent = new Fighter(3, 1, 1, new int[] {0, 0}, new int[] {4, 5}, new int[] {1, 2}, new int[] {0, 8});
+				Fighter opponent = new Fighter("Orc", 3, 1, 1, new int[] {0, 0}, new int[] {4, 5}, new int[] {1, 2}, new int[] {0, 8});
 				opponent.setSheild(new int[] {2,2});
 				opponent.setWeapon(new int[] {1, 0});
 				Game.battle.setOpponent(opponent);
