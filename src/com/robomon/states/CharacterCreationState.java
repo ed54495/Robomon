@@ -15,6 +15,8 @@ import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 
 import com.robomon.Fighter;
+import com.robomon.common.Background;
+import com.robomon.common.Map;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class CharacterCreationState extends BasicGameState {
 	private Image right;
 	private Image left;
 	public SpriteSheet characterSelectSheet;
+	
+	private int backgroundSpriteSize = 70;
 	
 	// Sprite selections
 	private int characterChoice = 0;
@@ -53,7 +57,7 @@ public class CharacterCreationState extends BasicGameState {
 	
 	private ParticleSystem system;
 	private ConfigurableEmitter emitter;
-
+	
 	@Override
 	public void init(GameContainer container, StateBasedGame sbg) throws SlickException {
 		characterSelectSheet = new SpriteSheet("resources/images/characters.png", 16, 16, 1);
@@ -88,7 +92,10 @@ public class CharacterCreationState extends BasicGameState {
 
 	@Override
 	public void render(GameContainer container, StateBasedGame sbg, Graphics g) throws SlickException {
-		g.setColor(Color.white);
+		Background.drawGreyBrickBackground(backgroundSpriteSize);
+		
+		
+		g.setColor(Color.black);
 		characterSelectSheet.getSubImage(0, characterChoice).draw(characterLocation[0], characterLocation[1], characterScale);
 		characterSelectSheet.getSubImage(3, pantsChoice).draw(characterLocation[0], characterLocation[1], characterScale);
 		characterSelectSheet.getSubImage(4, shoeChoice).draw(characterLocation[0], characterLocation[1], characterScale);

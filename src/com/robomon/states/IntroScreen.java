@@ -21,21 +21,21 @@ public class IntroScreen extends BasicGameState {
 	private Boolean loadGame = false;
 	
 	private int spriteSize = 70;
-	private int buildingSpriteSize = 25;
+	private int buildingSpriteSize = 26;
 	private SpriteSheet mapSprites;
 	private Map[][] map = {{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS},
-			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS},
-			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER, Map.GRASS},
-			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER, Map.WATER, Map.WATER, Map.GRASS},
-			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER, Map.GRASS, Map.GRASS},
-			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER, Map.GRASS, Map.GRASS}};
+			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER_TOP_LEFT, Map.WATER_TOP, Map.WATER_TOP_RIGHT},
+			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER_TOP_LEFT, Map.WATER_TOP, Map.WATER_DIRT_TOP_LEFT, Map.WATER, Map.WATER_DIRT_TOP_RIGHT},
+			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER_MID_LEFT, Map.WATER, Map.WATER, Map.WATER, Map.WATER},
+			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER_BOTTOM_LEFT, Map.WATER_DIRT_BOTTOM_LEFT, Map.WATER, Map.WATER, Map.WATER},
+			{Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.GRASS, Map.WATER_MID_LEFT, Map.WATER, Map.WATER, Map.WATER}};
 
 	@Override
 	public void init(GameContainer arg0, StateBasedGame arg1) throws SlickException {
 		newGame = new RoundedRectangle(150, 250, 150, 40, 10);
 		continueGame = new RoundedRectangle(400, 250, 150, 40, 10);
 		
-		mapSprites = new SpriteSheet("resources/images/mapSprites.png", 16, 16, 1);
+		mapSprites = new SpriteSheet("resources/images/mapSprites.png", 64, 64);
 	}
 
 	@Override
@@ -44,38 +44,13 @@ public class IntroScreen extends BasicGameState {
 		int y = 0;
 		for(Map[] row: map){
 			for(Map sprite: row){
-				mapSprites.getSubImage(sprite.x, sprite.y).draw(x, y, spriteSize, spriteSize);
+				Map.mapSprites.getSubImage(sprite.x, sprite.y).draw(x, y, spriteSize, spriteSize);
 				x += spriteSize;
 			}
 			x = 0;
 			y += spriteSize;
 		}
-		x = 25;
-		int xEdge = 25;
-		y = 25 + 2*buildingSpriteSize;
-		for(Map[] row: Buildings.BROWN_HOUSE_3X3.building){
-			for(Map sprite: row){
-				mapSprites.getSubImage(sprite.x, sprite.y).draw(x, y, buildingSpriteSize, buildingSpriteSize);
-				x += buildingSpriteSize;
-			}
-			x = xEdge;
-			y += buildingSpriteSize;
-		}
-		x = 25;
-		xEdge = 25;
-		y = 25;
-		for(Map[] row: Buildings.WHITE_ROOF_ANGLED_3X3.building){
-			for(Map sprite: row){
-				mapSprites.getSubImage(sprite.x, sprite.y).draw(x, y, buildingSpriteSize, buildingSpriteSize);
-				x += buildingSpriteSize;
-			}
-			x = xEdge;
-			y += buildingSpriteSize;
-		}
-		mapSprites.getSubImage(Map.ROUND_WOOD_DOOR.x, Map.ROUND_WOOD_DOOR.y).draw(25 + buildingSpriteSize, 25 + 4*buildingSpriteSize, buildingSpriteSize, buildingSpriteSize);
-		mapSprites.getSubImage(Map.WOOD_WINDOW.x, Map.WOOD_WINDOW.y).draw(25 + buildingSpriteSize, 25 + Math.round(2.5*buildingSpriteSize), buildingSpriteSize, buildingSpriteSize);
-		
-		
+		Buildings.drawBuilding(25, 25, buildingSpriteSize, 3, 3, 3, Map.ROUND_WOOD_DOOR, Map.WOOD_WINDOW);
 
 		g.setColor(Color.darkGray);
 		g.fill(newGame);

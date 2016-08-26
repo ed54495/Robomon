@@ -1,5 +1,6 @@
 package com.robomon.states;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Font;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -18,6 +19,7 @@ public class Victory extends BasicGameState{
 	@Override
 	public void render(GameContainer arg0, StateBasedGame arg1, Graphics g) throws SlickException {
 		Font myFont = g.getFont();
+		g.setColor(Color.white);
 		g.drawString("Victory!", 350 - myFont.getWidth("Victory!")/2f, 200);
 	}
 

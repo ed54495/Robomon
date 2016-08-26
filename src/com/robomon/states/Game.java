@@ -15,6 +15,7 @@ public class Game extends StateBasedGame {
 	public static int screenWidth = 700;
 	public static int screenHeight = 400;
 	public static Fighter fighter;
+	public static int backgroundSpriteSize = 70;
 	public static Battle battle = new Battle();
 	
 	public static final int INTRO_SCREEN = 0;

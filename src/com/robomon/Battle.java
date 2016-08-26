@@ -19,6 +19,7 @@ import org.newdawn.slick.state.transition.FadeInTransition;
 import org.newdawn.slick.state.transition.FadeOutTransition;
 
 import com.robomon.common.Attack;
+import com.robomon.common.Background;
 import com.robomon.states.Game;
 
 public class Battle extends BasicGameState {
@@ -113,11 +114,17 @@ public class Battle extends BasicGameState {
 
 	@Override
 	public void render(GameContainer container, StateBasedGame sbg, Graphics g) throws SlickException {
-		g.setColor(Color.white);
+		Background.drawGreyBrickBackground(Game.backgroundSpriteSize);
+		
+		g.setColor(Color.black);
 		g.draw(leftHUD);
 		g.draw(rightHUD);
 		
 		g.drawString(message, 40, 300);
+		
+		g.drawString(character.getHp() + "/" + character.getMaxhp(), 200, 255);
+		g.drawString("Lvl " + opponent.getLevel(), 540, 255);
+		g.drawString("Lvl " + character.getLevel(), 200, 235);
 		
 		character.drawFighter(g, characterSelectSheet, characterLocation[0], characterLocation[1], 10);
 		opponent.drawFighter(g, characterSelectSheet, opponentLocation[0], opponentLocation[1], 10);
@@ -133,11 +140,8 @@ public class Battle extends BasicGameState {
 		g.draw(opponentHealthOutline);
 		g.draw(characterXpOutline);
 		
-		g.drawString(character.getHp() + "/" + character.getMaxhp(), 200, 255);
-		g.drawString("Lvl " + opponent.getLevel(), 540, 255);
-		g.drawString("Lvl " + character.getLevel(), 200, 235);
-		
 		// Choose which menu to display
+		g.setColor(Color.black);
 		if(fightSelected) {
 			g.drawString(character.attacks[0].toString(), 380,  300);
 			g.drawString(character.attacks[1].toString(), 380,  335);
