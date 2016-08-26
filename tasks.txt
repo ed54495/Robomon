@@ -1,3 +1,5 @@
+Eddie:
+
 Battle state
   Update animation for attack vs defend moves
   update health numbers to only update after attacks
@@ -5,3 +7,8 @@ Map state
   Decide how to handle maps
 Character creation state
   Add name field
+
+Greg:
+
+Learn about Slick2d
+Code some shit
