@@ -31,7 +31,7 @@ public class Game extends StateBasedGame {
 
 	public static void main(String[] args) throws SlickException {
 		// Set location of native library.  change to /linux for linux computer
-		System.setProperty("org.lwjgl.librarypath", new File("libraries/native/macosx").getAbsolutePath());
+		// System.setProperty("org.lwjgl.librarypath", new File("libraries/native/linux").getAbsolutePath());
 		
 		// Create and start game
 		AppGameContainer app = new AppGameContainer(new Game("Robomon"));
